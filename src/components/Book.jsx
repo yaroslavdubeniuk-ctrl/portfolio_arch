@@ -17,7 +17,7 @@ function Book() {
 
   useEffect(() => {
     const updateSize = () => {
-      const height = Math.round(window.innerHeight * 0.86); // 60vh
+      const height = Math.round(window.innerHeight * 0.9); // 60vh
       const width = Math.round(height * (600 / 848));      // keep proportion
       setBookSize({ width, height });
     };
