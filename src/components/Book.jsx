@@ -3,33 +3,61 @@ import HTMLFlipBook from "react-pageflip";
 import cover from "./pages/cover.jpg";
 import backcover from "./pages/backcover.jpg";
 
-const pages = import.meta.glob("./pages/page-*.jpg", {
-  eager: true,
-  import: "default"
+const pages = import.meta.glob("./pages/page-*.jpg", { eager: true, import: "default" });
+
+const pageKeys = Object.keys(pages).sort((a, b) => {
+  const na = Number(a.match(/page-(\d+)/)[1]);
+  const nb = Number(b.match(/page-(\d+)/)[1]);
+  return na - nb;
 });
 
 function Book() {
+
+  const [bookSize, setBookSize] = useState({ width: 600, height: 848 });
+
+  useEffect(() => {
+    const updateSize = () => {
+      const height = Math.round(window.innerHeight * 0.86); // 60vh
+      const width = Math.round(height * (600 / 848));      // keep proportion
+      setBookSize({ width, height });
+    };
+
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(t);
+    const srcs = [cover, ...pageKeys.map((k) => pages[k])];
+    let done = 0;
+
+    srcs.forEach((src) => {
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        done++;
+        if (done === srcs.length) setLoading(false);
+      };
+      img.src = src;
+    });
   }, []);
 
 
   return (
     <>
 
-{loading && (
-  <div className="loader-overlay">
-    <div className="spinner" />
-  </div>
-)}
+      {loading && (
+        <div className="loader-overlay">
+          <div className="spinner" />
+        </div>
+      )}
 
 
       <HTMLFlipBook
-        width={600}
-        height={848}
+        width={bookSize.width}
+        height={bookSize.height}
         maxShadowOpacity={0.2}
         drawShadow={false}
         showCover={true}
